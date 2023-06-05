@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "ACharacter.h"
 #include "Camera/CameraComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Kismet/KismetMathLibrary.h"
 
 // Sets default values
 AACharacter::AACharacter()
@@ -11,8 +13,15 @@ AACharacter::AACharacter()
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>("SpringArmComp");
 	SpringArmComp->SetupAttachment(RootComponent);
+	SpringArmComp->bUsePawnControlRotation = true;
+
+
 	CameraComp = CreateDefaultSubobject<UCameraComponent>("CameraComp");
 	CameraComp->SetupAttachment(SpringArmComp);
+
+	GetCharacterMovement()->bOrientRotationToMovement = true;
+
+	bUseControllerRotationYaw = false;
 }
 
 // Called when the game starts or when spawned
@@ -23,7 +32,23 @@ void AACharacter::BeginPlay()
 }
 void AACharacter::MoveForward(float value)
 {
-	AddMovementInput(GetActorForwardVector(), value*1000);
+	FRotator ControlBot = GetControlRotation();
+	ControlBot.Roll = 0.0f;
+	ControlBot.Pitch = 0.0f;
+	AddMovementInput(ControlBot.Vector(), value);
+	
+}
+
+void AACharacter::MoveRight(float value)
+{
+	FRotator ControlBot = GetControlRotation();
+	ControlBot.Roll = 0.0f;
+	ControlBot.Pitch = 0.0f;
+
+	//FVector RightVector = UKismetMathLibrary::GetRightVector(ControlBot);
+	FVector RightVector = FRotationMatrix(ControlBot).GetScaledAxis(EAxis::Y);
+
+	AddMovementInput(RightVector, value);
 }
 
 // Called every frame
@@ -38,6 +63,10 @@ void AACharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
 	PlayerInputComponent->BindAxis("MoveForward", this, &AACharacter::MoveForward);
-	PlayerInputComponent->BindAxis("TurnCamera", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("MoveRight", this, &AACharacter::MoveRight);
+
+	PlayerInputComponent->BindAxis("TurnCameraRight", this, &APawn::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("TurnCameraUp", this, &APawn::AddControllerPitchInput);
 }
+
 
