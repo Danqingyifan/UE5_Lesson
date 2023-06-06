@@ -2,36 +2,23 @@
 
 #pragma once
 
-#include "GameFramework/SpringArmComponent.h"
-#include "Camera/CameraComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "ACharacter.generated.h"
+#include "AExplosiveBarrel.generated.h"
 
 UCLASS()
-class PRACTICE_PROJECT_API AACharacter : public ACharacter
+class PRACTICE_PROJECT_API AAExplosiveBarrel : public ACharacter
 {
 	GENERATED_BODY()
-protected:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ProjectileClass;
+
 public:
 	// Sets default values for this character's properties
-	AACharacter();
+	AAExplosiveBarrel();
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* CameraComp;
-
-	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* SpringArmComp;
-
-	void MoveForward(float value);
-	void MoveRight(float value);
-	void PrimaryAttack();
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

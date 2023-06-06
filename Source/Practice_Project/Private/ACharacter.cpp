@@ -51,6 +51,19 @@ void AACharacter::MoveRight(float value)
 	AddMovementInput(RightVector, value);
 }
 
+void AACharacter::PrimaryAttack()
+{
+	FVector headLocation = GetMesh()->GetSocketLocation("head");
+
+	FTransform SpawnTM = FTransform(GetActorRotation(), GetActorLocation());
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParameters);
+}
+
+
 // Called every frame
 void AACharacter::Tick(float DeltaTime)
 {
@@ -67,6 +80,8 @@ void AACharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 
 	PlayerInputComponent->BindAxis("TurnCameraRight", this, &APawn::AddControllerYawInput);
 	PlayerInputComponent->BindAxis("TurnCameraUp", this, &APawn::AddControllerPitchInput);
+
+	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AACharacter::PrimaryAttack);
 }
 
 
