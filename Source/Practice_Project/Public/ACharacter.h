@@ -6,15 +6,21 @@
 #include "Camera/CameraComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "ACInteractionComponent.h"
+#include "GamePlayInterface.h"
 #include "ACharacter.generated.h"
+
 
 UCLASS()
 class PRACTICE_PROJECT_API AACharacter : public ACharacter
 {
 	GENERATED_BODY()
 protected:
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<AActor> ProjectileClass;
+	UPROPERTY(EditAnywhere, Category = "Attack")
+		TSubclassOf<AActor> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, Category = "Attack")
+		UAnimMontage* AttackAnim;
 public:
 	// Sets default values for this character's properties
 	AACharacter();
@@ -24,15 +30,23 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY(VisibleAnywhere)
-	UCameraComponent* CameraComp;
+		UCameraComponent* CameraComp;
 
 	UPROPERTY(VisibleAnywhere)
-	USpringArmComponent* SpringArmComp;
+		USpringArmComponent* SpringArmComp;
+
+	UPROPERTY(VisibleAnywhere)
+		UACInteractionComponent* InteractionComp;
+
+	UPROPERTY()
+		FTimerHandle TimerHandle_PrimaryAttack;
 
 	void MoveForward(float value);
 	void MoveRight(float value);
 	void PrimaryAttack();
-public:	
+	void PrimaryInteract();
+	void PrimaryAttack_TimeElapsed();
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

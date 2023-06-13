@@ -8,7 +8,7 @@
 // Sets default values
 AACharacter::AACharacter()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>("SpringArmComp");
@@ -22,47 +22,16 @@ AACharacter::AACharacter()
 	GetCharacterMovement()->bOrientRotationToMovement = true;
 
 	bUseControllerRotationYaw = false;
+
+	InteractionComp = CreateDefaultSubobject<UACInteractionComponent>("InteractionComp");
 }
 
 // Called when the game starts or when spawned
 void AACharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 }
-void AACharacter::MoveForward(float value)
-{
-	FRotator ControlBot = GetControlRotation();
-	ControlBot.Roll = 0.0f;
-	ControlBot.Pitch = 0.0f;
-	AddMovementInput(ControlBot.Vector(), value);
-	
-}
-
-void AACharacter::MoveRight(float value)
-{
-	FRotator ControlBot = GetControlRotation();
-	ControlBot.Roll = 0.0f;
-	ControlBot.Pitch = 0.0f;
-
-	//FVector RightVector = UKismetMathLibrary::GetRightVector(ControlBot);
-	FVector RightVector = FRotationMatrix(ControlBot).GetScaledAxis(EAxis::Y);
-
-	AddMovementInput(RightVector, value);
-}
-
-void AACharacter::PrimaryAttack()
-{
-	FVector headLocation = GetMesh()->GetSocketLocation("head");
-
-	FTransform SpawnTM = FTransform(GetActorRotation(), GetActorLocation());
-
-	FActorSpawnParameters SpawnParameters;
-	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-
-	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParameters);
-}
-
 
 // Called every frame
 void AACharacter::Tick(float DeltaTime)
@@ -82,6 +51,59 @@ void AACharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponen
 	PlayerInputComponent->BindAxis("TurnCameraUp", this, &APawn::AddControllerPitchInput);
 
 	PlayerInputComponent->BindAction("PrimaryAttack", IE_Pressed, this, &AACharacter::PrimaryAttack);
+	PlayerInputComponent->BindAction("PrimaryInteract", IE_Pressed, this, &AACharacter::PrimaryInteract);
 }
 
+void AACharacter::MoveForward(float value)
+{
+	FRotator ControlBot = GetControlRotation();
+	ControlBot.Roll = 0.0f;
+	ControlBot.Pitch = 0.0f;
+	AddMovementInput(ControlBot.Vector(), value);
+}
+
+void AACharacter::MoveRight(float value)
+{
+	FRotator ControlBot = GetControlRotation();
+	ControlBot.Roll = 0.0f;
+	ControlBot.Pitch = 0.0f;
+
+	//FVector RightVector = UKismetMathLibrary::GetRightVector(ControlBot);
+	FVector RightVector = FRotationMatrix(ControlBot).GetScaledAxis(EAxis::Y);
+
+	AddMovementInput(RightVector, value);
+}
+
+void AACharacter::PrimaryAttack()
+{
+	float AnimTime = 0.2f;
+
+	PlayAnimMontage(AttackAnim);
+
+	GetWorldTimerManager().SetTimer(TimerHandle_PrimaryAttack, this,&AACharacter::PrimaryAttack_TimeElapsed, AnimTime);
+	// Aiming to adapt the time Anim take;
+
+	//GetWorldTimerManager().ClearTimer(TimerHandle_PrimaryAttack);
+}
+
+void AACharacter::PrimaryInteract()
+{
+	if (InteractionComp)
+	{
+		InteractionComp->PrimaryInteract();
+	}
+}
+
+void AACharacter::PrimaryAttack_TimeElapsed()
+{
+
+	FVector handLocation = GetMesh()->GetSocketLocation("hand_r");
+
+	FTransform SpawnTM = FTransform(GetActorRotation(), handLocation);
+
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	GetWorld()->SpawnActor<AActor>(ProjectileClass, SpawnTM, SpawnParameters);
+}
 
